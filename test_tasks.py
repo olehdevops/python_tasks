@@ -1,3 +1,5 @@
+# ITA Softserve, DevOps - Oleh Smahliuk
+
 import string
 from random import randint
 
