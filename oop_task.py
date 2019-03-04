@@ -1,74 +1,125 @@
 # ITA Softserve, DevOps - Oleh Smahliuk
 
-class Employee(object):
 
+class Department(object):
     id_employee = 0
     list_of_manager = {}  # list of managers with their teams
     info_employee = {}  # general information about employees
 
-    def __init__(self, first_name=None, second_name=None, position=None, salary=None,
-                 experience=None, coef_eff=None, manager=None):
+    def __init__(self):
+        Department.id_employee += 1
+
+
+class Employee(Department):
+
+    def __init__(self, first_name=None, second_name=None, salary=None, experience=None):
+        super().__init__()
 
         self.first_name = first_name
         self.second_name = second_name
-        self.position = position
         self.salary = salary
         self.experience = experience
-        self.coef_eff = coef_eff
+        self.base_salary = 0
+
+    def give_salary_base(self):
+
+        """add bonus for experience"""
+
+        self.base_salary = self.salary
+        if self.experience > 5:
+            self.base_salary = (self.base_salary * 1.2) + 500
+        elif self.experience > 2:
+            self.base_salary = self.base_salary + 200
+        return self.base_salary
+
+
+class Developer(Employee):
+
+    def __init__(self, first_name=None, second_name=None, salary=None, experience=None, manager=None):
         self.manager = manager
+        super().__init__(first_name, second_name, salary, experience)
 
-        Employee.id_employee += 1
+        # add to list general information about developers and designers
 
-        if self.manager is not None:  # add to list general information about developers and designers
+        if self.manager in self.list_of_manager.keys():
+            Employee.info_employee[Employee.id_employee] = [self.first_name, self.second_name,
+                                                            self.manager, self.experience, self.salary]
 
-            if self.manager in self.list_of_manager.keys():
-                Employee.info_employee[self.id_employee] = [self.first_name, self.second_name,
-                                                            self.manager, self.coef_eff,
-                                                            self.experience, self.salary]
-                Employee.list_of_manager[self.manager].append("%s %s" % (self.first_name,
-                                                                         self.second_name))
+            Employee.list_of_manager[self.manager].append("%s %s" % (self.first_name, self.second_name))
 
-            else:
-                print("{0} not yet on the list of managers."
-                      " Add {0} to the list of managers first.".format(self.manager))
+        else:
+            print("{0} not yet on the list of managers."
+                  " Add {0} to the list of managers first.".format(self.manager))
 
-        if self.manager is None:  # add to list general information about managers
-
-            if "{0} {1}".format(self.first_name, self.second_name) not in self.list_of_manager.keys():
-                Employee.list_of_manager["{0} {1}".format(self.first_name, self.second_name)] = []
-                Employee.info_employee[self.id_employee] = [self.first_name, self.second_name,
-                                                            self.experience, self.salary]
-
-            else:
-                print("%s %s is already on the list. To view the entire list "
-                      "use method view_list_of_managers" % (self.first_name, self.second_name))
-
-    def give_salary(self, arg):
+    def give_salary(self):
 
         """add bonus to salary"""
 
-        count = 0
-        for id_person, info in self.info_employee.items():
-            if "{0} {1}".format(info[0], info[1]) == arg:
+        print("{0} {1}: got salary: {2}$".format(self.first_name, self.second_name, super().give_salary_base()))
 
-                base_salary = info[-1]  # add bonus for experience
-                if info[-2] > 2:
-                    base_salary = info[-1] + 200
-                if info[-2] > 5:
-                    base_salary = (info[-1] * 1.2) + 500
+    def __repr__(self):
+        return "{0} {1}, manager: {2}, experiance: {3}".format(self.first_name, self.second_name,
+                                                               self.manager, self.experience)
 
-                if info[-3] is not None and len(info) > 4:  # add bonus for effectiveness
-                    base_salary *= info[-3]
 
-                if arg in self.list_of_manager.keys():  # add bonus for team management
-                    if len(self.list_of_manager[arg]) > 5:
-                        base_salary += 200
-                    elif len(self.list_of_manager[arg]) > 10:
-                        base_salary += 300
-                print("{0}: got salary: {1}$".format(arg, int(base_salary)))
-                count += 1
-        if count == 0:
-                print("{0} is not in the department".format(arg))
+class Designer(Employee):
+
+    def __init__(self, first_name=None, second_name=None, salary=None, experience=None,
+                 manager=None, coef_eff=None):
+        super().__init__(first_name, second_name, salary, experience)
+        self.manager = manager
+        self.coef_eff = coef_eff
+
+        # add to list general information about developers and designers
+
+        if self.manager in self.list_of_manager.keys():
+            Employee.info_employee[Employee.id_employee] = [self.first_name, self.second_name, self.manager,
+                                                            self.coef_eff, self.experience, self.salary]
+            Employee.list_of_manager[self.manager].append("%s %s" % (self.first_name, self.second_name))
+
+        else:
+            print("{0} not yet on the list of managers."
+                  " Add {0} to the list of managers first.".format(self.manager))
+
+    def give_salary(self):
+
+        """add bonus to salary"""
+
+        print("{0} {1}: got salary: {2}$".format(self.first_name, self.second_name,
+                                                 super().give_salary_base() * self.coef_eff))
+
+    def __repr__(self):
+        return "{0} {1}, manager: {2}, experiance: {3}".format(self.first_name, self.second_name,
+                                                               self.manager, self.experience)
+
+
+class Manager(Employee):
+
+    def __init__(self, first_name=None, second_name=None, salary=None, experience=None):
+        super().__init__(first_name, second_name, salary, experience)
+
+        # add to list general information about developers and designers
+
+        if "{0} {1}".format(self.first_name, self.second_name) not in self.list_of_manager.keys():
+            Employee.list_of_manager["{0} {1}".format(self.first_name, self.second_name)] = []
+            Employee.info_employee[self.id_employee] = [self.first_name, self.second_name,
+                                                        self.experience, self.salary]
+
+        else:
+            print("%s %s is already on the list. To view the entire list "
+                  "use method view_list_of_managers" % (self.first_name, self.second_name))
+
+    def give_salary(self):
+
+        """add bonus to salary"""
+
+        self.salary = super().give_salary_base()
+        if len(self.list_of_manager["{0} {1}".format(self.first_name, self.second_name)]) > 10:
+            self.salary = self.salary + 300
+        elif len(self.list_of_manager["{0} {1}".format(self.first_name, self.second_name)]) > 5:
+            self.salary = self.salary + 200
+
+        print("{0} {1}: got salary: {2}$".format(self.first_name, self.second_name, self.salary))
 
     def view_list_of_managers(self):
 
@@ -83,52 +134,27 @@ class Employee(object):
                     print("\t {0}".format(value))
 
     def __repr__(self):
-        if self.manager is None:
-            return "{0} {1}, experiance: {2}".format(self.first_name, self.second_name, self.experience)
-        else:
-            return "{0} {1}, manager: {2}, experiance: {3}".format(self.first_name, self.second_name,
-                                                                   self.manager, self.experience)
+        return "{0} {1}, experiance: {2}".format(self.first_name, self.second_name, self.experience)
 
 
-person1 = Employee(first_name="Ivan", second_name="Reva",
-                   position="manager", salary=1000, experience=3)
-person2 = Employee(first_name="Vasia", second_name="Pupkin",
-                   position="Dev", salary=2000, experience=7, manager="Ivan Reva")
-person3 = Employee(first_name="Stepan", second_name="Rak",
-                   position="Dev", salary=2000, experience=2, manager="Ivan Reva")
-# person4 = Employee(first_name="Jo", second_name="Rush", position="manager",
-#                    salary=3000, experience=3)
-# person5 = Employee(first_name="Bob", second_name="Pupkin", position="Dis",
-#                    salary=2000, experience=7, coef_eff=0.5, manager="Jo Rush")
-# person6 = Employee(first_name="Den", second_name="Broun", position="manager",
-#                    salary=3000, experience=3)
-# person7 = Employee(first_name="Din", second_name="Broun", position="manager",
-#                    salary=1000, experience=7)
-# person8 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                    salary=2000, experience=2, manager="Den Broun")
-# person9 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                    salary=2000, experience=3, manager="Den Broun")
-# person10 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=2, manager="Den Broun")
-# person11 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Ivan Reva")
-# person12 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Ivan Reva")
-# person13 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Din Broun")
-# person14 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Din Broun")
-# person15 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Jo Rush")
-# person16 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Ivan Reva")
-# person17 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Ivan Reva")
-# person18 = Employee(first_name="Alan", second_name="Turing", position="manager",
-#                     salary=3000, experience=3)
-# person19 = Employee(first_name="Vasia", second_name="Pupkin", position="Dev",
-#                     salary=2000, experience=7, manager="Alan Turing")
+person1 = Manager(first_name="Ivan", second_name="Reva", salary=1000, experience=7)
+person2 = Developer(first_name="Vasia", second_name="Pupkin", salary=2000, experience=7, manager="Ivan Reva")
+person3 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person4 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person5 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person6 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person7 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person8 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person9 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person10 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person11 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person12 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Ivan Reva")
+person15 = Manager(first_name="Jo", second_name="Rush", salary=1000, experience=7)
+person13 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Jo Rush")
+person14 = Designer(first_name="Bob", second_name="Pupkin", salary=2000, experience=7, coef_eff=1, manager="Jo Rush")
 
-print(person3)
-person3.give_salary("Stepan Rak")
-person3.view_list_of_managers()
+
+# person1.give_salary()
+# person5.give_salary()
+# person1.view_list_of_managers()
+# print(person15)
