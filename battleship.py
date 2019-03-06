@@ -119,7 +119,7 @@ def battleship():
 
     while count_miss < 10:  # starts to play game
         print(game_field)
-        # print(ships_coordinate)  # if you want to win :)
+        print(ships_coordinate)  # if you want to win :)
         try:
             i, j = input("Enter two digits from 1 to 10 and press \"Enter\": ").split()
             i, j = int(i) - 1, int(j) - 1
